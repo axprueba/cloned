@@ -1,0 +1,40 @@
+name: Run Python Tests, SonarQube Check, and Deploy with Terraform
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'       # Ignore all changes in the docs folder
+      - 'mkdocs.yml'    # Ignore changes to the MkDocs configuration
+  pull_request:
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  # python-tests:
+  #   uses: axprueba/workflows/.github/workflows/run-python-tests.yml@master
+  #   with:
+  #     python-version: '3.9'
+
+  sonarqube-run:
+    # needs: python-tests
+    uses: axprueba/workflows/.github/workflows/run-sonarqube-python.yml@master
+    with:
+      sonarqube-project-key: 'example-app'
+      python-version: '3.9'
+      tests-command: 'coverage run -m pytest && coverage xml -o coverage.xml'
+      check-result: true
+    secrets:
+      SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      SONARQUBE_HOST_URL: ${{ secrets.SONARQUBE_HOST_URL }}
+
+  # deploy-with-terraform:
+  #   needs: sonarqube-run
+  #   uses: axprueba/workflows/.github/workflows/run-deploy-with-terraform.yml@master
+  #   with:
+  #     terraform-version: '1.0.11'  # Specify the version
+  #     environment: 'production'    # Specify the deployment environment
+  #   secrets:
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
